@@ -22,18 +22,19 @@ import sys
 import time
 
 import numpy as np
-import tensorflow as tf
+import tensorflow.compat.v1 as tf
+tf.disable_eager_execution()
 
 def load_graph(model_file):
-  graph = tf.Graph()
-  graph_def = tf.GraphDef()
+    graph = tf.Graph()
+    graph_def = tf.compat.v1.GraphDef()
 
-  with open(model_file, "rb") as f:
-    graph_def.ParseFromString(f.read())
-  with graph.as_default():
-    tf.import_graph_def(graph_def)
+    with open(model_file, "rb") as f:
+        graph_def.ParseFromString(f.read())
 
-  return graph
+    with graph.as_default():
+        tf.import_graph_def(graph_def, name="")
+    return graph
 
 def read_tensor_from_image_file(file_name, input_height=299, input_width=299,
 				input_mean=0, input_std=255):
@@ -71,11 +72,11 @@ if __name__ == "__main__":
   file_name = "tf_files/flower_photos/daisy/3475870145_685a19116d.jpg"
   model_file = "tf_files/retrained_graph.pb"
   label_file = "tf_files/retrained_labels.txt"
-  input_height = 224
-  input_width = 224
-  input_mean = 128
-  input_std = 128
-  input_layer = "input"
+  input_height = 299
+  input_width = 299
+  input_mean = 0
+  input_std = 255
+  input_layer = "Mul"
   output_layer = "final_result"
 
   parser = argparse.ArgumentParser()
@@ -116,8 +117,8 @@ if __name__ == "__main__":
                                   input_mean=input_mean,
                                   input_std=input_std)
 
-  input_name = "import/" + input_layer
-  output_name = "import/" + output_layer
+  input_name = input_layer
+  output_name = output_layer
   input_operation = graph.get_operation_by_name(input_name);
   output_operation = graph.get_operation_by_name(output_name);
 
